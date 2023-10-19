@@ -2,7 +2,8 @@
 const venom = require('venom-bot');
 const express = require('express');
 const app = express();
-const userNumber = '923452237310'
+const userNumber = '923232055861'; //user number which we want to send the message
+
 function sendMessage(client, number, message) { //function to send the message
     client
         .sendText(number, message)
@@ -15,7 +16,7 @@ function sendMessage(client, number, message) { //function to send the message
         });
 }
 
-function checkDammamLocation(lat, long) {
+function checkDammamLocation(lat, long) { //checks the dammam coordination
     // Define the latitude and longitude of Dammam, Saudi Arabia
     const dammamLatitude = 26.392666;
     const dammamLongitude = 50.112158;
@@ -43,21 +44,21 @@ function checkDammamLocation(lat, long) {
     }
 
 }
-function checksMessage(client) {
+function checksMessage(client) { //after sending first message (list of services message) it will wait for the client reply
     client.onMessage(async (message) => {
-        if (message.body === 'Battery Replacement' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
+        if (message.body === 'Battery Replacement' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) { // if message from the usernumber  and also not from the group
             sendMessage(client, message.from, 'send your current location');
         }
         if (message.body === 'Battery Prices' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
-            sendMessage(client, message.from, 'Battery Prices');
+            sendMessage(client, message.from, 'Battery Prices'); //here we will send the batter price lists and battery types
         }
-        if (message.body === 'Assistance' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
+        if (message.body === 'Assistant' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
             sendMessage(client, message.from, 'An agent will assist you soon')
         }
-        if (message.type == 'location' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
+        if (message.type == 'location' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) { //if message type is location 
             console.log("Location coordinates: ", message.lat, message.lng);
             const result = checkDammamLocation(message.lat, message.lng);
-            console.log("Check Dammam Result: ", result, "0 means user in dammam and 1 means user outside the dammam");
+            console.log("Check Dammam Result: ", result, "(0 means user in dammam and 1 means user outside the dammam)");
         }
         // else {
         //     console.log(message.notifyName, message.body);
@@ -65,7 +66,7 @@ function checksMessage(client) {
 
     });
 }
-function start(client) {
+function start(client) { //sending the first message 
     client.sendText(`${userNumber}@c.us`,
         "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
         .then((result) => {
