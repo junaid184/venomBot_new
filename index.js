@@ -43,6 +43,8 @@ app.get('/qr', async (req, res) => {
 
 
 })
+
+const userNumber = ['923122975086', '923452237310'];
 app.listen(5000, () => {
     console.log(`http://localhost:5000`)
 

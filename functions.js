@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const imageDirectory = './image/';
 const imageExtensions = ['.jpg', '.png', '.jpeg'];
-const userNumber = '923122975086'; //user number which we want to send the message
-const providerNumber = '923452237310';
+const userNumber = ['923122975086']; //user number which we want to send the message
+const providerNumber = '923452237310'; //provider number
 const DistanceInMilesFinder = async (a, b) => {
     const client = new Client();
     const response = await client.directions({
@@ -41,10 +41,10 @@ function checksMessage(client) { //after sending first message (list of services
     let lastUserWaiting = [];
     let queryArray = [];
     client.onMessage(async (message) => {
-        if (message.body === '1' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) { // if message from the usernumber  and also not from the group
+        if (message.body === '1' && message.isGroupMsg === false && userNumber.includes(message.from)) { // if message from the usernumber  and also not from the group
             sendMessage(client, message.from, 'send your current location');
         }
-        if (message.body === '2' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
+        if (message.body === '2' && message.isGroupMsg === false && userNumber.includes(message.from)) {
             fs.readdir(imageDirectory, (err, files) => {
                 if (err) {
                     console.error('Error reading the directory:', err);
@@ -52,12 +52,12 @@ function checksMessage(client) { //after sending first message (list of services
                 }
 
                 // Filter files by extension
-                const imageFiles = files.filter(async (file) => {
+                files.filter(async (file) => {
                     imageExtensions.includes(path.extname(file).toLowerCase())
                     console.log("file", file);
                     await client
                         .sendImage( //here we will send the batter price lists and battery types
-                            `${userNumber}@c.us`,
+                            message.from,
                             `./image/${file}`,
                             'Battery Image',
                             'Price: 10000$'
@@ -74,11 +74,11 @@ function checksMessage(client) { //after sending first message (list of services
             })
 
         }
-        if (message.body === '3' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
+        if (message.body === '3' && message.isGroupMsg === false && userNumber.includes(message.from)) {
             sendMessage(client, message.from, 'Tell me your query');
             queryArray.push(message.from);
         }
-        if (message.from === `${userNumber}@c.us` && message.isGroupMsg == false && message.body !== '1' && message.body !== '2' && message.body !== '3') {
+        if (userNumber.includes(message.from) && message.isGroupMsg == false && message.body !== '1' && message.body !== '2' && message.body !== '3') {
             for (const number of queryArray) {
                 sendMessage(client, `${providerNumber}@c.us`,
                     `Customer number : ${message.from} \n\nQuery: ${message.body}`);
@@ -109,15 +109,15 @@ function checksMessage(client) { //after sending first message (list of services
 
             }
 
-            if (message.from === `${userNumber}@c.us`) {
+            if (userNumber.includes(message.from)) {
 
                 const area = await DistanceInMilesFinder('21.4817, 39.1828', `${message.lat},${message.lng}`) //first parameter is the jeddah coordinates just to check the user address is dammam or not
                 if (area.end_address.includes('Dammam')) { //checks user location is dammam?
-                    sendMessage(client, `${userNumber}`,
+                    sendMessage(client, message.from,
                         `sorry we are not providing services in Dammam, you can select option no. 3 for the assistance`);
                 }
                 else {
-                    sendMessage(client, `${userNumber}@c.us`, //user
+                    sendMessage(client, message.from, //user
                         `Please wait for the response we are finding you a provider.`);
 
                     sendMessage(client, `${providerNumber}@c.us`, //ask provider for the location
@@ -127,20 +127,22 @@ function checksMessage(client) { //after sending first message (list of services
                 }
             }
         }
-        // else if (message.from === `${userNumber}@c.us` && message.isGroupMsg === false) {
+        // else if (userNumber.includes(message.from) && message.isGroupMsg === false) {
         //     sendMessage(client, message.from, `Sorry I can't understand you can select opt no. 3 for the assistance`);
         // }
     });
 }
 function start(client) { //sending the first message 
-    client.sendText(`${userNumber}@c.us`,
-        "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
-        .then((result) => {
-            console.log('result', result?.status?.messageSendResult); //return object success
-        })
-        .catch((erro) => {
-            console.error('Error when sending: ', erro); //return object error
-        });
+    for (const userNo of userNumber) {
+        client.sendText(`${userNo}@c.us`,
+            "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
+            .then((result) => {
+                console.log('result', result?.status?.messageSendResult); //return object success
+            })
+            .catch((erro) => {
+                console.error('Error when sending: ', erro); //return object error
+            });
+    }
     checksMessage(client);
 }
 
