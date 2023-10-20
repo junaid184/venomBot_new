@@ -35,13 +35,10 @@ app.get('/', async (req, res) => {
                 // Call the custom handleQRCode function
                 handleQRCode(base64Qrimg, asciiQR, attempts, urlCode, res);
             }
-
         })
         .then(async (client) => {
             start(client)
         });
-
-
 })
 app.listen(5000, () => {
     console.log(`http://localhost:5000`)
