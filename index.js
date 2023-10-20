@@ -37,14 +37,12 @@ app.get('/qr', async (req, res) => {
             }
 
         })
-        .then((client) => {
+        .then(async (client) => {
             start(client)
-        })
-        .catch((erro) => {
-            console.log(erro.message);
         });
-});
 
+
+})
 app.listen(5000, () => {
     console.log(`http://localhost:5000`)
 

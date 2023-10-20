@@ -39,6 +39,7 @@ function checksMessage(client) { //after sending first message (list of services
         lng: null
     }
     let lastUserWaiting = [];
+    let queryArray = [];
     client.onMessage(async (message) => {
         if (message.body === '1' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) { // if message from the usernumber  and also not from the group
             sendMessage(client, message.from, 'send your current location');
@@ -74,7 +75,16 @@ function checksMessage(client) { //after sending first message (list of services
 
         }
         if (message.body === '3' && message.isGroupMsg === false && message.from === `${userNumber}@c.us`) {
-            sendMessage(client, message.from, 'An agent will assist you soon')
+            sendMessage(client, message.from, 'Tell me your query');
+            queryArray.push(message.from);
+        }
+        if (message.from === `${userNumber}@c.us` && message.isGroupMsg == false && message.body !== '1' && message.body !== '2' && message.body !== '3') {
+            for (const number of queryArray) {
+                sendMessage(client, `${providerNumber}@c.us`,
+                    `Customer number : ${message.from} \n\nQuery: ${message.body}`);
+                sendMessage(client, number, 'An agent will assist you soon')
+            }
+            queryArray = []
         }
         if (message.type == 'location' && message.isGroupMsg === false) { //if message type is location 
 
@@ -91,7 +101,10 @@ function checksMessage(client) { //after sending first message (list of services
                     sendMessage(client, `${users.from}`, // 1 hr
                         `estimated time ${estimatedTime.duration.text}, 
                         thanks for choose our services a customer representative will reach to you`);
+
                 }
+                lastUserWaiting = []
+
 
 
             }
