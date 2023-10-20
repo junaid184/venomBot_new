@@ -27,7 +27,7 @@ function handleQRCode(base64Qrimg, asciiQR, attempts, urlCode, res) {
 
 }
 
-app.get('/qr', async (req, res) => {
+app.get('/', async (req, res) => {
     venom
         .create({
             session: './tokens/faaiz', // Path to your session data
@@ -43,8 +43,6 @@ app.get('/qr', async (req, res) => {
 
 
 })
-
-const userNumber = ['923122975086', '923452237310'];
 app.listen(5000, () => {
     console.log(`http://localhost:5000`)
 

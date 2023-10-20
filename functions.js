@@ -14,10 +14,7 @@ const DistanceInMilesFinder = async (a, b) => {
             key: "AIzaSyDMKqWExuhfyRYXtWOx1Ak1iXOIzNMDhWM",
         },
     });
-    console.log("route", response?.data?.routes[0]?.legs[0]?.duration);
-    console.log("dammam location check", response.data.routes[0].legs[0])
     const estimatedTime = response?.data?.routes[0]?.legs[0];
-
     return estimatedTime
 }
 
@@ -104,13 +101,9 @@ function checksMessage(client) { //after sending first message (list of services
 
                 }
                 lastUserWaiting = []
-
-
-
             }
 
             if (userNumber.includes(message.from)) {
-
                 const area = await DistanceInMilesFinder('21.4817, 39.1828', `${message.lat},${message.lng}`) //first parameter is the jeddah coordinates just to check the user address is dammam or not
                 if (area.end_address.includes('Dammam')) { //checks user location is dammam?
                     sendMessage(client, message.from,
