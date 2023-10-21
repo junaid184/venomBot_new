@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const imageDirectory = './image/';
 const imageExtensions = ['.jpg', '.png', '.jpeg'];
-const userNumber = ['923122975086']; //user number which we want to send the message
+const userNumber = ['923122975086@c.us', '923002331473@c.us']; //user number which we want to send the message
 const providerNumber = '923452237310'; //provider number
 const DistanceInMilesFinder = async (a, b) => {
     const client = new Client();
@@ -127,7 +127,7 @@ function checksMessage(client) { //after sending first message (list of services
 }
 function start(client) { //sending the first message 
     for (const userNo of userNumber) {
-        client.sendText(`${userNo}@c.us`,
+        client.sendText(`${userNo}`,
             "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
             .then((result) => {
                 console.log('result', result?.status?.messageSendResult); //return object success

@@ -1,0 +1,14 @@
+How to run the project:
+first of all install nodejs on your system.
+then extract files into the folder
+in the image folder place the all images with named prices and types
+now open the function.js file 
+and in userNumber array put all the numbers of user
+in providerNumber place your provider number
+To run the project open the terminal or cmd on same folder
+type npm install 
+and then installing the script run npm start
+
+after running it will give you the localhost link copy and paste it in your browser
+then you will see qrcode 
+scan it with your whatsapp account.
