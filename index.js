@@ -6,7 +6,6 @@ const {
     DistanceInMilesFinder,
     sendMessage,
     checksMessage,
-    start
 } = require('./functions')
 function handleQRCode(base64Qrimg, asciiQR, attempts, urlCode, res) {
     const html = `
@@ -37,7 +36,7 @@ app.get('/', async (req, res) => {
             }
         })
         .then(async (client) => {
-            start(client)
+            checksMessage(client);
         });
 })
 app.listen(5000, () => {

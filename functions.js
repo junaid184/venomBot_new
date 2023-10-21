@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const imageDirectory = './image/';
 const imageExtensions = ['.jpg', '.png', '.jpeg'];
-const userNumber = ['923122975086@c.us', '923002331473@c.us']; //user number which we want to send the message
+let userNumber = []
 const providerNumber = '923452237310'; //provider number
 const DistanceInMilesFinder = async (a, b) => {
     const client = new Client();
@@ -38,6 +38,18 @@ function checksMessage(client) { //after sending first message (list of services
     let lastUserWaiting = [];
     let queryArray = [];
     client.onMessage(async (message) => {
+        console.log(message.from)
+        if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber))
+            client.sendText(message.from,
+                "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
+                .then((result) => {
+                    userNumber.push(message.from);
+                    console.log('result', result?.status?.messageSendResult); //return object success
+
+                })
+                .catch((erro) => {
+                    console.error('Error when sending: ', erro); //return object error
+                });
         if (message.body === '1' && message.isGroupMsg === false && userNumber.includes(message.from)) { // if message from the usernumber  and also not from the group
             sendMessage(client, message.from, 'send your current location');
         }
@@ -125,23 +137,11 @@ function checksMessage(client) { //after sending first message (list of services
         // }
     });
 }
-function start(client) { //sending the first message 
-    for (const userNo of userNumber) {
-        client.sendText(`${userNo}`,
-            "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
-            .then((result) => {
-                console.log('result', result?.status?.messageSendResult); //return object success
-            })
-            .catch((erro) => {
-                console.error('Error when sending: ', erro); //return object error
-            });
-    }
-    checksMessage(client);
-}
+
 
 module.exports = {
     DistanceInMilesFinder,
     sendMessage,
     checksMessage,
-    start
+
 }
