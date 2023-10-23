@@ -101,6 +101,10 @@ function checksMessage(client) { //it will wait for the client reply
             sendMessage(client, `${providerNumber}@c.us`, `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
             sendMessage(client, message.from, 'Your Appointment is Confirmed provider is on the way');
         }
+        if (userNumber.includes(mesage.from) && msg === 'no' && message.isGroupMsg === false) {
+            sendMessage(client, `${providerNumber}@c.us`, `Appointment is not confirmed with the customer ${message.from} \n\n Customer said no`)
+            sendMessage(client, message.from, 'Thank you for using our services');
+        }
         if (message.type == 'location' && message.isGroupMsg === false) { //if message type is location 
 
             console.log("Location coordinates: ", message.lat, message.lng, 'location from: ', message.from);
