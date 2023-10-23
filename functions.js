@@ -30,13 +30,14 @@ function sendMessage(client, number, message) { //function to send the message
         });
 }
 
-function checksMessage(client) { //after sending first message (list of services message) it will wait for the client reply
+function checksMessage(client) { //it will wait for the client reply
     let providerLocation = {
         lat: null,
         lng: null
     }
     let lastUserWaiting = [];
     let queryArray = [];
+    let userLocation = {};
     client.onMessage(async (message) => {
         console.log(message.from)
         if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber))
@@ -95,6 +96,11 @@ function checksMessage(client) { //after sending first message (list of services
             }
             queryArray = []
         }
+        const msg = message.body.toLowerCase();
+        if (userNumber.includes(message.from) && msg === 'yes' && message.isGroupMsg === false) {
+            sendMessage(client, `${providerNumber}@c.us`, `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
+            sendMessage(client, message.from, 'Your Appointment is Confirmed provider is on the way');
+        }
         if (message.type == 'location' && message.isGroupMsg === false) { //if message type is location 
 
             console.log("Location coordinates: ", message.lat, message.lng, 'location from: ', message.from);
@@ -105,14 +111,14 @@ function checksMessage(client) { //after sending first message (list of services
                 for (const users of lastUserWaiting) {
                     const estimatedTime = await DistanceInMilesFinder(`
                     ${providerLocation.lat}, ${providerLocation.lng}`,
-                        `${users.lat},${users.lng}`); // replace first parameter with actual service center coordinates
+                        `${users.lat},${users.lng}`
+                    ); // replace first parameter with actual service center coordinates
                     console.log("distance: ", estimatedTime);
                     sendMessage(client, `${users.from}`, // 1 hr
-                        `estimated time ${estimatedTime.duration.text}, 
-                        thanks for choose our services a customer representative will reach to you`);
-
+                        `Estimated time ${estimatedTime.duration.text}, \n\n
+                        Thanks for choose our services a customer representative will reach to you, type yes or no to confirm your appointment`);
                 }
-                lastUserWaiting = []
+                lastUserWaiting = [];
             }
 
             if (userNumber.includes(message.from)) {
@@ -124,17 +130,13 @@ function checksMessage(client) { //after sending first message (list of services
                 else {
                     sendMessage(client, message.from, //user
                         `Please wait for the response we are finding you a provider.`);
-
                     sendMessage(client, `${providerNumber}@c.us`, //ask provider for the location
                         'hey provider send me your current location');
-
                     lastUserWaiting.push(message);
+                    userLocation[message.from] = `${message.lat},${message.lng}`;
                 }
             }
         }
-        // else if (userNumber.includes(message.from) && message.isGroupMsg === false) {
-        //     sendMessage(client, message.from, `Sorry I can't understand you can select opt no. 3 for the assistance`);
-        // }
     });
 }
 
