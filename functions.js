@@ -4,7 +4,7 @@ const path = require('path');
 const imageDirectory = './image/';
 const imageExtensions = ['.jpg', '.png', '.jpeg'];
 let userNumber = []
-const providerNumber = '923452237310'; //provider number
+const providerNumber = '923122975086'; //provider number
 const DistanceInMilesFinder = async (a, b) => {
     const client = new Client();
     const response = await client.directions({
@@ -31,6 +31,7 @@ function sendMessage(client, number, message) { //function to send the message
 }
 
 function checksMessage(client) { //it will wait for the client reply
+    console.log("function is running")
     let providerLocation = {
         lat: null,
         lng: null
@@ -101,7 +102,7 @@ function checksMessage(client) { //it will wait for the client reply
             sendMessage(client, `${providerNumber}@c.us`, `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
             sendMessage(client, message.from, 'Your Appointment is Confirmed provider is on the way');
         }
-        if (userNumber.includes(mesage.from) && msg === 'no' && message.isGroupMsg === false) {
+        if (userNumber.includes(message.from) && msg === 'no' && message.isGroupMsg === false) {
             sendMessage(client, `${providerNumber}@c.us`, `Appointment is not confirmed with the customer ${message.from} \n\n Customer said no`)
             sendMessage(client, message.from, 'Thank you for using our services');
         }
