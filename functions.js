@@ -4,7 +4,7 @@ const path = require('path');
 const imageDirectory = './image/';
 const imageExtensions = ['.jpg', '.png', '.jpeg'];
 let userNumber = []
-const providerNumber = '923122975086'; //provider number
+const providerNumber = '923452237310'; //provider number
 const DistanceInMilesFinder = async (a, b) => {
     const client = new Client();
     const response = await client.directions({
@@ -43,7 +43,6 @@ function checksMessage(client) { //it will wait for the client reply
     const orderTime = 10; //constant
     let totalEstimatedTime = 0;
     client.onMessage(async (message) => {
-        console.log(message.body);
         let msg = message?.body.toLowerCase();
         if (message.from === `${providerNumber}@c.us` && msg.includes('done')) {
             let keys = Object.keys(orders);
@@ -111,8 +110,9 @@ function checksMessage(client) { //it will wait for the client reply
         }
 
         if (userNumber.includes(message.from) && msg === 'yes' && message.isGroupMsg === false) {
+            const customerNumber = message.from.replace('@c.us', '')
             sendMessage(client, `${providerNumber}@c.us`,
-                `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
+                `Appointment is confirmed with the customer https://wa.me/+${customerNumber} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
             sendMessage(client, message.from, 'Your Appointment is Confirmed provider is on the way');
         }
         if (userNumber.includes(message.from) && msg === 'no' && message.isGroupMsg === false) {
