@@ -39,9 +39,18 @@ function checksMessage(client) { //it will wait for the client reply
     let lastUserWaiting = [];
     let queryArray = [];
     let userLocation = {};
-    let orders = [];
+    let orders = {};
+    const orderTime = 10;
+    let totalEstimatedTime = 0;
     client.onMessage(async (message) => {
         console.log(message.from)
+        const msg = message.body.toLowerCase();
+        if (message.from === `${providerNumber}@c.us` && msg('done')) {
+            let orderNumber = msg.match(/(\d+)/);
+            let keys = Object.keys(orders);
+            delete orders[keys[orderNumber]];
+            console.log('new order list is: ', orders);
+        }
         if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber)) {
             //first interaction with any customer
             client.sendText(message.from,
@@ -100,17 +109,17 @@ function checksMessage(client) { //it will wait for the client reply
             }
             queryArray = []
         }
-        const msg = message.body.toLowerCase();
+
         if (userNumber.includes(message.from) && msg === 'yes' && message.isGroupMsg === false) {
             sendMessage(client, `${providerNumber}@c.us`,
                 `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
             sendMessage(client, message.from, 'Your Appointment is Confirmed provider is on the way');
-            orders.push(message.from);
         }
         if (userNumber.includes(message.from) && msg === 'no' && message.isGroupMsg === false) {
             sendMessage(client, `${providerNumber}@c.us`,
                 `Appointment is not confirmed with the customer ${message.from} \n\n Customer said no`)
             sendMessage(client, message.from, 'Thank you for using our services');
+            delete orders[message.from];
         }
         if (message.type == 'location' && message.isGroupMsg === false) { //if message type is location 
 
@@ -125,9 +134,26 @@ function checksMessage(client) { //it will wait for the client reply
                         `${users.lat},${users.lng}`
                     ); // replace first parameter with actual service center coordinates
                     console.log("distance: ", estimatedTime);
+                    orders[users.from]["location"] = `${users.lat},${users.lng}`;
+                    const keys = Object.keys(orders);
+                    let timeUnit = ""
+                    if (keys.length > 0) {
+                        for (const key of keys) {
+                            timeUnit = orders[key]['estimatedTime'].match(/\b\w+\b/)[0];
+                            let firstTime = orders[key]['estimatedTime'].match(/(\d+)/);
+                            totalEstimatedTime = totalEstimatedTime + orderTime + firstTime; //calculating estimated time
+
+                        }
+                        orders[users.from]['estimatedTime'] = totalEstimatedTime;
+                        totalEstimatedTime = 0;
+                    }
+                    else {
+                        orders[users.from]['estimatedTime'] = estimatedTime.duration.text;
+                    }
                     sendMessage(client, `${users.from}`, // 1 hr
-                        `Estimated time ${estimatedTime.duration.text}, \n\n
+                        `Estimated time ${orders[users.from]['estimatedTime']} ${timeUnit}, \n\n
                         Thanks for choose our services a customer representative will reach to you, type yes or no to confirm your appointment`);
+
                 }
                 lastUserWaiting = [];
             }
