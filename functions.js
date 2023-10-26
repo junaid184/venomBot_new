@@ -39,9 +39,11 @@ function checksMessage(client) { //it will wait for the client reply
     let lastUserWaiting = [];
     let queryArray = [];
     let userLocation = {};
+    let orders = [];
     client.onMessage(async (message) => {
         console.log(message.from)
-        if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber))
+        if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber)) {
+            //first interaction with any customer
             client.sendText(message.from,
                 "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
                 .then((result) => {
@@ -52,6 +54,7 @@ function checksMessage(client) { //it will wait for the client reply
                 .catch((erro) => {
                     console.error('Error when sending: ', erro); //return object error
                 });
+        }
         if (message.body === '1' && message.isGroupMsg === false && userNumber.includes(message.from)) { // if message from the usernumber  and also not from the group
             sendMessage(client, message.from, 'send your current location');
         }
@@ -99,11 +102,14 @@ function checksMessage(client) { //it will wait for the client reply
         }
         const msg = message.body.toLowerCase();
         if (userNumber.includes(message.from) && msg === 'yes' && message.isGroupMsg === false) {
-            sendMessage(client, `${providerNumber}@c.us`, `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
+            sendMessage(client, `${providerNumber}@c.us`,
+                `Appointment is confirmed with the customer ${message.from} \n\n Customer location: https://maps.google.com/?q=${userLocation[message.from]}`)
             sendMessage(client, message.from, 'Your Appointment is Confirmed provider is on the way');
+            orders.push(message.from);
         }
         if (userNumber.includes(message.from) && msg === 'no' && message.isGroupMsg === false) {
-            sendMessage(client, `${providerNumber}@c.us`, `Appointment is not confirmed with the customer ${message.from} \n\n Customer said no`)
+            sendMessage(client, `${providerNumber}@c.us`,
+                `Appointment is not confirmed with the customer ${message.from} \n\n Customer said no`)
             sendMessage(client, message.from, 'Thank you for using our services');
         }
         if (message.type == 'location' && message.isGroupMsg === false) { //if message type is location 
@@ -129,16 +135,16 @@ function checksMessage(client) { //it will wait for the client reply
             if (userNumber.includes(message.from)) {
                 const area = await DistanceInMilesFinder('21.4817, 39.1828', `${message.lat},${message.lng}`) //first parameter is the jeddah coordinates just to check the user address is dammam or not
                 if (area.end_address.includes('Dammam')) { //checks user location is dammam?
-                    sendMessage(client, message.from,
-                        `sorry we are not providing services in Dammam, you can select option no. 3 for the assistance`);
-                }
-                else {
                     sendMessage(client, message.from, //user
                         `Please wait for the response we are finding you a provider.`);
                     sendMessage(client, `${providerNumber}@c.us`, //ask provider for the location
                         'hey provider send me your current location');
                     lastUserWaiting.push(message);
                     userLocation[message.from] = `${message.lat},${message.lng}`;
+                }
+                else {
+                    sendMessage(client, message.from,
+                        `sorry we are not providing services outside Dammam, you can select option no. 3 for the assistance`);
                 }
             }
         }
