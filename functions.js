@@ -40,18 +40,18 @@ function checksMessage(client) { //it will wait for the client reply
     let queryArray = [];
     let userLocation = {};
     let orders = {};
-    const orderTime = 10;
+    const orderTime = 10; //constant
     let totalEstimatedTime = 0;
     client.onMessage(async (message) => {
-        console.log(message.from)
-        const msg = message.body.toLowerCase();
-        if (message.from === `${providerNumber}@c.us` && msg('done')) {
-            let orderNumber = msg.match(/(\d+)/);
+        console.log(message.body);
+        let msg = message?.body.toLowerCase();
+        if (message.from === `${providerNumber}@c.us` && msg.includes('done')) {
             let keys = Object.keys(orders);
-            delete orders[keys[orderNumber]];
+            userNumber = userNumber.filter((x) => x !== keys[0]); // delete user
+            delete orders[keys[0]];
             console.log('new order list is: ', orders);
         }
-        if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber)) {
+        if (message.body !== '1' && message.body !== '2' && message.body !== '3' && !userNumber.includes(message.from) && !message.from.includes(providerNumber) && message.isGroupMsg === false) {
             //first interaction with any customer
             client.sendText(message.from,
                 "List of services we are offering \n\n1. Battery Replacement \n\n2. Battery Prices \n\n3. Assistance \n\nSend the option 1 2 or 3")
@@ -76,7 +76,7 @@ function checksMessage(client) { //it will wait for the client reply
 
                 // Filter files by extension
                 files.filter(async (file) => {
-                    imageExtensions.includes(path.extname(file).toLowerCase())
+                    imageExtensions.includes(path.extname(file).toLowerCase());
                     console.log("file", file);
                     await client
                         .sendImage( //here we will send the batter price lists and battery types
@@ -86,7 +86,7 @@ function checksMessage(client) { //it will wait for the client reply
                             'Price: 10000$'
                         )
                         .then((result) => {
-                            console.log('Result: ', result); //return object success
+                            console.log('Result: ', result?.status?.messageSendResultult); //return object success
                         })
                         .catch((erro) => {
                             console.error('Error when sending: ', erro); //return object error
@@ -122,36 +122,34 @@ function checksMessage(client) { //it will wait for the client reply
             delete orders[message.from];
         }
         if (message.type == 'location' && message.isGroupMsg === false) { //if message type is location 
-
             console.log("Location coordinates: ", message.lat, message.lng, 'location from: ', message.from);
-
             if (message.from === `${providerNumber}@c.us`) {
                 providerLocation.lat = message.lat;
                 providerLocation.lng = message.lng;
+                console.log("last waiting user", lastUserWaiting);
                 for (const users of lastUserWaiting) {
                     const estimatedTime = await DistanceInMilesFinder(`
                     ${providerLocation.lat}, ${providerLocation.lng}`,
                         `${users.lat},${users.lng}`
                     ); // replace first parameter with actual service center coordinates
-                    console.log("distance: ", estimatedTime);
+                    orders[users.from] = {}
+                    console.log("orders object", orders);
                     orders[users.from]["location"] = `${users.lat},${users.lng}`;
-                    const keys = Object.keys(orders);
-                    let timeUnit = ""
-                    if (keys.length > 0) {
-                        for (const key of keys) {
-                            timeUnit = orders[key]['estimatedTime'].match(/\b\w+\b/)[0];
-                            let firstTime = orders[key]['estimatedTime'].match(/(\d+)/);
-                            totalEstimatedTime = totalEstimatedTime + orderTime + firstTime; //calculating estimated time
-
-                        }
-                        orders[users.from]['estimatedTime'] = totalEstimatedTime;
+                    let keys = Object.keys(orders);
+                    console.log("orders keys", keys);
+                    if (keys.length > 1) {
+                        let firstTime = Number(orders[keys[0]]['estimatedTime']); //time number
+                        console.log("first time", firstTime);
+                        totalEstimatedTime = Number(totalEstimatedTime + orderTime + firstTime); //calculating estimated time
+                        orders[users.from]['estimatedTime'] = Number(totalEstimatedTime);
                         totalEstimatedTime = 0;
                     }
                     else {
-                        orders[users.from]['estimatedTime'] = estimatedTime.duration.text;
+                        console.log("time duration", estimatedTime?.duration?.value)
+                        orders[users.from]['estimatedTime'] = Number(Number(estimatedTime?.duration?.value) / 60).toFixed(0);
                     }
                     sendMessage(client, `${users.from}`, // 1 hr
-                        `Estimated time ${orders[users.from]['estimatedTime']} ${timeUnit}, \n\n
+                        `Estimated time ${orders[users.from]['estimatedTime']} mins, \n\n
                         Thanks for choose our services a customer representative will reach to you, type yes or no to confirm your appointment`);
 
                 }
@@ -160,7 +158,7 @@ function checksMessage(client) { //it will wait for the client reply
 
             if (userNumber.includes(message.from)) {
                 const area = await DistanceInMilesFinder('21.4817, 39.1828', `${message.lat},${message.lng}`) //first parameter is the jeddah coordinates just to check the user address is dammam or not
-                if (area.end_address.includes('Dammam')) { //checks user location is dammam?
+                if (!area.end_address.includes('Dammam')) { //checks user location is dammam?
                     sendMessage(client, message.from, //user
                         `Please wait for the response we are finding you a provider.`);
                     sendMessage(client, `${providerNumber}@c.us`, //ask provider for the location
@@ -168,10 +166,10 @@ function checksMessage(client) { //it will wait for the client reply
                     lastUserWaiting.push(message);
                     userLocation[message.from] = `${message.lat},${message.lng}`;
                 }
-                else {
-                    sendMessage(client, message.from,
-                        `sorry we are not providing services outside Dammam, you can select option no. 3 for the assistance`);
-                }
+                // else {
+                //     sendMessage(client, message.from,
+                //         `sorry we are not providing services outside Dammam, you can select option no. 3 for the assistance`);
+                // }
             }
         }
     });
