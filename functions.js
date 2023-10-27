@@ -47,6 +47,7 @@ function checksMessage(client) { //it will wait for the client reply
         if (message.from === `${providerNumber}@c.us` && msg.includes('done')) {
             let keys = Object.keys(orders);
             userNumber = userNumber.filter((x) => x !== keys[0]); // delete user
+            orders[keys[keys.length - 1]]['estimatedTime'] = orders[keys[keys.length - 1]]['estimatedTime'] - orderTime;
             delete orders[keys[0]];
             console.log('new order list is: ', orders);
         }
@@ -102,8 +103,9 @@ function checksMessage(client) { //it will wait for the client reply
         }
         if (userNumber.includes(message.from) && message.isGroupMsg == false && message.body !== '1' && message.body !== '2' && message.body !== '3') {
             for (const number of queryArray) {
+                const customerNumber = message.from.replace('@c.us', '')
                 sendMessage(client, `${providerNumber}@c.us`,
-                    `Customer number : ${message.from} \n\nQuery: ${message.body}`);
+                    `Customer number : https://wa.me/+${customerNumber} \n\nQuery: ${message.body}`);
                 sendMessage(client, number, 'An agent will assist you soon')
             }
             queryArray = []
@@ -150,7 +152,8 @@ function checksMessage(client) { //it will wait for the client reply
                     }
                     sendMessage(client, `${users.from}`, // 1 hr
                         `Estimated time ${orders[users.from]['estimatedTime']} mins, \n\n
-                        Thanks for choose our services a customer representative will reach to you, type yes or no to confirm your appointment`);
+                        Thanks for choose our services a customer representative will reach to you, \n\n
+                        Type yes or no to confirm your appointment`);
 
                 }
                 lastUserWaiting = [];
