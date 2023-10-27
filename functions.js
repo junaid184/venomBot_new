@@ -78,12 +78,13 @@ function checksMessage(client) { //it will wait for the client reply
                 files.filter(async (file) => {
                     imageExtensions.includes(path.extname(file).toLowerCase());
                     console.log("file", file);
+                    let price = file.match(/(\d+)/);
                     await client
                         .sendImage( //here we will send the batter price lists and battery types
                             message.from,
                             `./image/${file}`,
                             'Battery Image',
-                            'Price: 10000$'
+                            `Price: ${price} SR`
                         )
                         .then((result) => {
                             console.log('Result: ', result?.status?.messageSendResultult); //return object success
